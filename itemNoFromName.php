@@ -9,10 +9,10 @@ function IsNullOrEmptyString($question){
 function connect_db(){
     //Setup Connection with MySQL database
     
-    $servername = "sql.thedavidhanks.com";
-    $username= "auctionuser";
-    $password="fun3t!mes";
-    $dbname="mydb";
+    $servername = getenv('dbserver');
+    $username= getenv('dbuser');
+    $password=getenv('dbpass');
+    $dbname=getenv('dbname');
     $connection = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
     return $connection;
 }
