@@ -1,8 +1,8 @@
 <?php
-//ini_set('display_errors', 1); //for testing
+ini_set('display_errors', 1); //for testing
 $missing=false;
 
-include functions.php;
+include 'functions.php';
 
 $itemName = (!IsNullOrEmptyString(filter_input(INPUT_GET, "name", FILTER_SANITIZE_STRING))?filter_input(INPUT_GET, "name"):"");
 

@@ -13,7 +13,7 @@
 
 ini_set('display_errors', 1); //for testing
 
-include functions.php;
+include 'functions.php';
 
 $itemNo = (!IsNullOrEmptyString(filter_input(INPUT_GET, "itemNo", FILTER_SANITIZE_STRING))?filter_input(INPUT_GET, "itemNo"):"");
 $option = (!IsNullOrEmptyString(filter_input(INPUT_GET, "option", FILTER_SANITIZE_STRING))?filter_input(INPUT_GET, "option"):"");
