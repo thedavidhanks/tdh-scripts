@@ -23,6 +23,22 @@ $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 if(!IsNullOrEmptyString($option)){
     //add or remove numbers
+    //UPDATE `mydb`.`items` SET `trackPrice`='True' WHERE `id`='158932';
+    $trackPrice = $option = delete? 'False' : 'True';
+    $actionED = $option = delete? 'deleted' : 'added';
+    $query = "UPDATE `mydb`.`items` SET `trackPrice`='$trackPrice' WHERE `id`='$itemNo'";
+    try {
+        $updateRow = $conn->prepare($query);
+        $updateRow->execute();
+        $updateCount = $updateRow->rowCount();
+        if($updateCount>0){
+            //successfully added
+            $list = "$itemNo was $actionED to tracked Items";
+        }
+    } catch (PDOException $ex) {
+        echo "Error: " . $ex->getMessage();
+        die();
+    }
 }else{
     //return a json of all items being tracked
     
