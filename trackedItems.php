@@ -21,12 +21,12 @@ $option = (!IsNullOrEmptyString(filter_input(INPUT_GET, "option", FILTER_SANITIZ
 $conn = connect_db();
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if(!IsNullOrEmptyString($option)){
+if(!IsNullOrEmptyString($option) & !IsNullOrEmptyString($itemNo)){
     //add or remove numbers
     //UPDATE `mydb`.`items` SET `trackPrice`='True' WHERE `id`='158932';
     $trackPrice = $option = delete? 'False' : 'True';
     $actionED = $option = delete? 'deleted' : 'added';
-    $query = "UPDATE `mydb`.`items` SET `trackPrice`='$trackPrice' WHERE `id`='$itemNo'";
+    $query = "UPDATE mydb.items SET trackPrice='$trackPrice' WHERE id='$itemNo'";
     try {
         $updateRow = $conn->prepare($query);
         $updateRow->execute();
