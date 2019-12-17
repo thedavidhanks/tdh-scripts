@@ -30,11 +30,15 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         //If the time stamp is not given by the sensor, use the current timestamp.
         $timestamp = !empty(filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT) : time();
         
-        //Check that all post data is avaliable
+//Check that all post data is avaliable
 //        foreach($_POST as $key => $value)
 //        {
 //            echo($key." = ".$value."<br />");
 //        }
+//        echo("pass = ".$passcode."\n");
+//        echo("tempF = ".$tempF."\n");
+//        echo("humidity = ".$humidity."\n");
+//        echo("rel_humidity = ".$rel_humidity."\n");
 	if (!empty($passcode) && !empty($tempF) && !empty($humidity) && !empty($rel_humidity)){
             //A passcode has been sent.  Determine if the sensor is authorized.
             try{
@@ -60,8 +64,8 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                     $query_insert = $db->query("INSERT INTO `readings` (sensor_id, reading_time, tempF, humidity, rel_humidity) VALUES ({$sensor_id}, '{$datetime}', {$tempF}, {$humidity}, {$rel_humidity})");
                     if($query_insert){
                         //echo "<div class=\"w3-panel w3-green\"><h3>Added values</h3><p>Time: $datetime<br /> Temperature: $tempF F<br /> Humitidy: $humidity %<br /> Relative Humitidy: $rel_humidity %</p></div>";                               
-                        echo "CODE 001: SUCCESS.";
-                        echo "Added values - Time: $datetime<br /> Temperature: $tempF F<br /> Humitidy: $humidity %<br /> Relative Humitidy: $rel_humidity %";                               
+                        echo "CODE 001: SUCCESS<br />";
+                        echo "Added values - <br />Time: $datetime<br /> Temperature: $tempF F<br /> Humitidy: $humidity %<br /> Relative Humitidy: $rel_humidity %";                               
                     }
                 }else{echo "CODE 101: A VALID SERIAL COULD NOT BE FOUND";}	
             }catch(PDOException $ex) {
