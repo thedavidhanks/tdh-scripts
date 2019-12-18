@@ -17,7 +17,7 @@
 //CODE 110: POST data missing
 //CODE 120: Could not connect to DB
 
-include('sensor_functions.php');
+include('../common_functions.php');
 
 if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 		
