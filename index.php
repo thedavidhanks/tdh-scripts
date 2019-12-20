@@ -1,3 +1,3 @@
 <?php
 
-include('post_sensor_record.php');
+include('./homeSensor/post_sensor_record.php');

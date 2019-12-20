@@ -13,6 +13,7 @@
 //CODE 001: SUCCESS. Added data to mySQL database
 //CODE 100: Data is missing from post.
 //CODE 101: A VALID SERIAL COULD NOT BE FOUND
+//CODE 105: No data returned by queuery
 //CODE 110: POST data missing
 //CODE 120: Could not connect to DB
 
@@ -57,17 +58,63 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
             }catch(PDOException $ex) {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
-
-                    //or a better way to log errors
-                    //some_logging_function($ex->getMessage());
             }
 	}
 	else{	
 		echo "CODE 100: data is missing from post.";
 	}
-}
+        
+       
+/*List all the data points in time order*/
+}else if(filter_input(INPUT_SERVER, "REQUEST_METHOD") === "GET") {
+    //Collect and filter all the post vars.
+    switch (filter_input(INPUT_GET,'request' )){
+        case "listall":
+            try{
+            $db = connect_db();
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            
+            $query_sel = $db->query("SELECT * FROM `gps_readings` WHERE `sensor_id` = 4 ORDER BY `time` DESC");
+                if($query_sel->rowCount() > 0){
+                    $gps_list_json = "{ \"points\": [";
 
-//If no post value is available, the user should see the last location of the cricket.
+                    //If the sensor is identified, then get the id.
+                    foreach ($query_sel as $row){
+                        $gps_list_json .= "{ \"lat\": {$row['lat']}, \"long\": {$row['long']}, \"date\": \"{$row['time']}\"}, ";
+                    }
+                    $gps_list_json .= "]}";
+                    echo $gps_list_json;
+                }else{echo "CODE 105: No data returned by queuery<br />";}	
+            }catch(PDOException $ex) {
+                echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
+                echo $ex->getMessage();
+            }
+            break;
+        case "latest":
+        default:
+            try{
+            $db = connect_db();
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            
+            $query_sel = $db->query("SELECT * FROM `gps_readings` WHERE `sensor_id` = 4 ORDER BY `time` DESC LIMIT 1");
+                if($query_sel->rowCount() > 0){
+                    $gps_list_json = "";
+                    
+                    foreach ($query_sel as $row){
+                        $gps_list_json .= "{ \"lat\": {$row['lat']}, \"long\": {$row['long']}, \"date\": \"{$row['time']}\"}";
+                    }
+                    echo $gps_list_json;
+                }else{echo "CODE 105: No data returned by queuery<br />";}	
+            }catch(PDOException $ex) {
+                echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
+                echo $ex->getMessage();
+            }
+            break;
+    }
+}
+//If no get or post value is available, the user should see the last location of the cricket.
 else{
     try{
         $db = connect_db();
