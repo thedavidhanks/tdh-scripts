@@ -16,8 +16,10 @@
 //CODE 105: No data returned by queuery
 //CODE 110: POST data missing
 //CODE 120: Could not connect to DB
+//CODE 125: Environment variable could not be found.
 
-include('../common_functions.php');
+include('../common/common_functions.php');
+$tdh_db = "CLEARDB_URL-TDH_SCRIPTS";
 
 if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 		
@@ -26,35 +28,39 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         $lat = filter_input(INPUT_POST,'lat',FILTER_VALIDATE_FLOAT);
         $long = filter_input(INPUT_POST,'long',FILTER_VALIDATE_FLOAT );
         $timestamp = !empty(filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT) : time();
+        $speed = !empty(filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT) : NULL;
         
 
 	if (!empty($passcode) && !empty($lat) && !empty($long) && !empty($timestamp)){
             //A passcode has been sent.  Determine if the sensor is authorized.
             try{
-                $db = connect_db();
-                $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+                if($db = connect_db("CLEARDB_URL-TDH_SCRIPTS")){
+                    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
-                //find a sensor with the same passcode
-                $query_sel = $db->query("SELECT * FROM sensor_list WHERE sensor_passcode = '{$passcode}'");
-                if($query_sel->rowCount() > 0){
+                    //find a sensor with the same passcode
+                    $query_sel = $db->query("SELECT * FROM sensor_list WHERE sensor_passcode = '{$passcode}'");
+                    if($query_sel->rowCount() > 0){
 
-                    //If the sensor is identified, then get the id.
-                    foreach ($query_sel as $row){
-                            $sensor_id = $row['id_sensorlist'];
-                            $sensor_location = $row['sensor_location'];
-                    }
-                    //$timestamp converted to datetime for mysql
-                    date_default_timezone_set('America/Chicago');
+                        //If the sensor is identified, then get the id.
+                        foreach ($query_sel as $row){
+                                $sensor_id = $row['id_sensorlist'];
+                                $sensor_location = $row['sensor_location'];
+                        }
+                        //$timestamp converted to datetime for mysql
+                        date_default_timezone_set('America/Chicago');
 
-                    $datetime = date('Y-m-d H:i:s', $timestamp); //"2017-02-28 14:00:02";
-                    
-                    $query_insert = $db->query("INSERT INTO `instruments`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}');");
-                    if($query_insert){
-                        echo "CODE 001: SUCCESS<br />";
-                        echo "Added values - <br />Time: $datetime<br /> Lat: $lat<br /> Long: $long";                               
-                    }
-                }else{echo "CODE 101: A VALID SERIAL COULD NOT BE FOUND";}	
+                        $datetime = date('Y-m-d H:i:s', $timestamp); //"2017-02-28 14:00:02";
+
+                        $query_insert = $db->query("INSERT INTO `heroku_bfbb423415a117e`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}');");
+                        if($query_insert){
+                            echo "CODE 001: SUCCESS<br />";
+                            echo "Added values - <br />Time: $datetime<br /> Lat: $lat<br /> Long: $long";                               
+                        }
+                    }else{echo "CODE 101: A VALID SERIAL COULD NOT BE FOUND";}
+                }else{
+                    echo "CODE 125: Environment variable could not be found.";
+                }
             }catch(PDOException $ex) {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
@@ -71,7 +77,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
     switch (filter_input(INPUT_GET,'request' )){
         case "listall":
             try{
-            $db = connect_db();
+            $db = connect_db($tdh_db);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             
@@ -94,7 +100,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         case "latest":
         default:
             try{
-            $db = connect_db();
+            $db = connect_db($tdh_db);
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             
@@ -117,7 +123,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 //If no get or post value is available, the user should see the last location of the cricket.
 else{
     try{
-        $db = connect_db();
+        $db = connect_db($tdh_db);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 

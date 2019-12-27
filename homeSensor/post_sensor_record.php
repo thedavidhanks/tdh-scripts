@@ -17,7 +17,7 @@
 //CODE 110: POST data missing
 //CODE 120: Could not connect to DB
 
-include('../common_functions.php');
+include('../common/common_functions.php');
 
 if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 		
@@ -42,7 +42,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 	if (!empty($passcode) && !empty($tempF) && !empty($humidity) && !empty($rel_humidity)){
             //A passcode has been sent.  Determine if the sensor is authorized.
             try{
-                $db = connect_db();
+                $db = connect_db("BLACKSERVER_DATABASE_URL");
                 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                 $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
