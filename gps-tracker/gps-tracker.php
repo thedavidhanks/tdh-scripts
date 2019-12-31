@@ -49,13 +49,31 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                         }
                         //$timestamp converted to datetime for mysql
                         date_default_timezone_set('America/Chicago');
-
                         $datetime = date('Y-m-d H:i:s', $timestamp); //"2017-02-28 14:00:02";
 
-                        $query_insert = $db->query("INSERT INTO `heroku_bfbb423415a117e`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}');");
-                        if($query_insert){
-                            echo "CODE 001: SUCCESS<br />";
-                            echo "Added values - <br />Time: $datetime<br /> Lat: $lat<br /> Long: $long";                               
+                        //Get the last sensor point
+                        //$query_lastPoint = $db->query("SELECT * from `heroku_bfbb423415a117e`.`gps_readings` ORDER BY `time` DESC LIMIT 1");
+                        //calculate the distance between the last point and the current
+                            //   REFERENCE - http://edwilliams.org/avform.htm#Dist
+                            //angle_radians=(pi/180)*angle_degrees
+                            //angle_degrees=(180/pi)*angle_radians 
+                        
+                            //distance_radians=(pi/(180*60))*distance_nm
+                            //distance_nm=((180*60)/pi)*distance_radians 
+                        
+                            //distance_radians=2*asin(sqrt((sin((lat1-lat2)/2))^2 + cos(lat1)*cos(lat2)*(sin((lon1-lon2)/2))^2))
+                            //
+                            //GPS tolerance +/- 2.5 meters
+                        //if the distance > 5 meters add the point
+                        if(true){
+                            $query_insert = $db->query("INSERT INTO `heroku_bfbb423415a117e`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}');");
+                            if($query_insert){
+                                echo "CODE 001: SUCCESS<br />";
+                                echo "Added values - <br />Time: $datetime<br /> Lat: $lat<br /> Long: $long";                               
+                            }
+                        }else{
+                            //No movement (distance <=5m, point not added.  
+                            //Update timestamp?  New column, last seen?
                         }
                     }else{echo "CODE 101: A VALID SERIAL COULD NOT BE FOUND";}
                 }else{
