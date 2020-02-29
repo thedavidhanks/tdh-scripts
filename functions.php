@@ -7,11 +7,13 @@ function IsNullOrEmptyString($question){
 function connect_db(){
     //Setup Connection with MySQL database
     
-    $servername = getenv('dbserver');
-    $username= getenv('dbuser');
-    $password=getenv('dbpass');
-    $dbname=getenv('dbname');
+    $url = parse_url(getenv("CLEARDB_URL_TDH_SCRIPTS"));
+    $servername = $url["host"];
+    $username = $url["user"];
+    $password = $url["pass"];
+    $dbname = substr($url["path"], 1);
     $connection = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $connection->prepare("USE $dbname;")->execute();
     return $connection;
 }
 ?>
