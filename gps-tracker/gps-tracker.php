@@ -20,8 +20,8 @@
 //CODE 125: Environment variable could not be found.
 
 include('../common/common_functions.php');
-$tdh_db = "CLEARDB_URL-TDH_SCRIPTS";
 
+$tdh_db = "CLEARDB_URL_TDH_SCRIPTS";
 //computes the arch length in radians between two lat, long points
 function great_circle_arc(float $lat1,float $long1, float $lat2, float $long2){
     //this assumes that all points are in the Nort/west hemispheres
@@ -43,7 +43,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 	if (!empty($passcode) && !empty($lat) && !empty($long) && !empty($timestamp)){
             //A passcode has been sent.  Determine if the sensor is authorized.
             try{
-                if($db = connect_db("CLEARDB_URL-TDH_SCRIPTS")){
+                if($db = connect_db($tdh_db)){
                     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                     $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 

@@ -1,3 +1,5 @@
 <?php
-
-include('./homeSensor/post_sensor_record.php');
+$ptr = '';
+?>
+<a href="gps-tracker/">gps-tracker</a>
+<a href="mad/"/>Instaposts</a>
