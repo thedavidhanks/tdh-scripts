@@ -128,12 +128,15 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
             $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             
             $query_sel = $db->query("SELECT * FROM `gps_readings` WHERE `sensor_id` = 4 ORDER BY `time` DESC");
-                if($query_sel->rowCount() > 0){
+                $numRows = $query_sel->rowCount();
+                if($numRows > 0){
                     $gps_list_json = "{ \"points\": [";
-
+                    $i = 0;
                     //If the sensor is identified, then get the id.
                     foreach ($query_sel as $row){
-                        $gps_list_json .= "{ \"lat\": {$row['lat']}, \"long\": {$row['long']}, \"date\": \"{$row['time']}\"}, ";
+                        $gps_list_json .= "{ \"lat\": {$row['lat']}, \"long\": {$row['long']}, \"date\": \"{$row['time']}\"}";
+                        //add a comma for all but last row
+                        $gps_list_json .= (++$i === $numRows) ? "" : ", ";
                     }
                     $gps_list_json .= "]}";
                     echo $gps_list_json;
