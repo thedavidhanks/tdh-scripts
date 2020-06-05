@@ -38,7 +38,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         $long = filter_input(INPUT_POST,'long',FILTER_VALIDATE_FLOAT );
         $timestamp = !empty(filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT) : time();
         $speed = !empty(filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT) : NULL;
-        
+        $trip_name = !empty(filter_input(INPUT_POST,'tripname' ))? filter_input(INPUT_POST,'tripname' ) : "RoadTrip2020";
 
 	if (!empty($passcode) && !empty($lat) && !empty($long) && !empty($timestamp)){
             //A passcode has been sent.  Determine if the sensor is authorized.
@@ -88,7 +88,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                         //if the distance between the two points > 5 meters add the point
                         if(!is_nan($dist_meters) && ($dist_meters > 5) ){
                             
-                            $query_insert = $db->query("INSERT INTO `heroku_bfbb423415a117e`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}');");
+                            $query_insert = $db->query("INSERT INTO `heroku_bfbb423415a117e`.`gps_readings` (`sensor_id`, `time`, `lat`, `long`, `tripname`) VALUES ('{$sensor_id}', '{$datetime}', '{$lat}', '{$long}', '{$trip_name}');");
                             if($query_insert){
                                 echo "CODE 001: SUCCESS<br />";
                                 echo "Added values<br />Time: $datetime<br /> Lat: $lat<br /> Long: $long<br /><br /> LastLat: $last_lat <br /> LastLong: $last_long<br />"; 
@@ -112,6 +112,9 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
             }
+            //build a new path.
+            include_once('updatePath.php');
+            generateFullPath();
 	}
 	else{	
             echo "CODE 100: data is missing from post.";
@@ -145,6 +148,17 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
             }
+            break;
+        case "getPathJSON":
+            echo file_get_contents("cricketTraveledPath.json");
+            break;
+//        case "test":
+//            include_once('updatePath.php');
+//            addPointToPath([31.7922398, -106.2160130], 'RoadTrip2020');
+//            break;
+        case "updateFullPath":
+            include_once('updatePath.php');
+            generateFullPath();
             break;
         case "latest":
         default:
