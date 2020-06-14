@@ -60,7 +60,8 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         $timestamp = !empty(filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'timestamp',FILTER_VALIDATE_INT) : time();
         $speed = !empty(filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT)) ? filter_input(INPUT_POST, 'speed',FILTER_VALIDATE_INT) : NULL;
         $trip_name = !empty(filter_input(INPUT_POST,'tripname' ))? filter_input(INPUT_POST,'tripname' ) : "RoadTrip2020";
-
+        $update_full_path = filter_var(filter_input(INPUT_POST,'updatefullpath' ),FILTER_VALIDATE_BOOLEAN);
+        
 	if (!empty($passcode) && !empty($lat) && !empty($long) && !empty($timestamp)){
             //A passcode has been sent.  Determine if the sensor is authorized.
             try{
@@ -109,16 +110,30 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                                 echo "CODE 001: SUCCESS<br />";
                                 echo "Added values<br />Time: $datetime<br /> Lat: $lat<br /> Long: $long<br /><br /> LastLat: $last_lat <br /> LastLong: $last_long<br />"; 
                                 echo "Distance $dist_meters meters <br />";
+                                
+                                //Update path file.
+                                //It is preferable to add to the existing path in order to
+                                //minimize map quest transactions. When correcting the route by adding 
+                                //intermediate points the post var updatefullpath can be set to true
+                                //in order to force full path generation.
+                                include_once('updatePath.php');
+                                if($update_full_path){
+                                    generateFullPath();
+                                }
+                                else{
+                                    //add to existing path
+                                    addPointToPath([$lat, $long], 'RoadTrip2020');
+                                }
                             }
                         }else{
+                            //No movement (distance <=5m, point not added.  
                             $query_update = $db->query("UPDATE `heroku_bfbb423415a117e`.`gps_readings` SET `last_seen`='{$datetime}' WHERE `id`='{$last_id}';");
                             if($query_update){
                                 echo "CODE 002: SUCCESS<br />";
                                 echo "Updated last seen:<br />ID: $last_id<br />Time: $datetime<br /> Lat: $last_lat<br /> Long: $last_long<br />";
                                 echo "$lat, $long (current) was $dist_meters meters of $last_lat, $last_long (last)<br />";
+                                echo "Path file not updated<br />";
                             }
-                            //No movement (distance <=5m, point not added.  
-                            //Update timestamp?  New column, last seen?
                         }
                     }else{echo "CODE 101: A VALID SERIAL COULD NOT BE FOUND";}
                 }else{
@@ -127,10 +142,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
             }catch(PDOException $ex) {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
-            }
-            //build a new path.
-            include_once('updatePath.php');
-            generateFullPath();
+            }            
 	}
 	else{	
             echo "CODE 100: data is missing from post.";
@@ -172,10 +184,10 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
 //            include_once('updatePath.php');
 //            addPointToPath([31.7922398, -106.2160130], 'RoadTrip2020');
 //            break;
-        case "updateFullPath":
-            include_once('updatePath.php');
-            generateFullPath();
-            break;
+//        case "updateFullPath":
+//            include_once('updatePath.php');
+//            generateFullPath();
+//            break;
         case "checkDistance":
             $lat1 = filter_input(INPUT_GET,'lat1',FILTER_VALIDATE_FLOAT);
             $long1 = filter_input(INPUT_GET,'long1',FILTER_VALIDATE_FLOAT );
