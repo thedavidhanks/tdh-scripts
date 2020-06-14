@@ -78,7 +78,6 @@ function getMQroute($point1, $point2){
 }
 function addPointToPath($newLatLong, $trip) {
     //Adds on to the existing path with the new coordinate
-    //
     $jsonRouteFilePath = "cricketTraveledPath.json";
     $error_msg = "";
     $result = false;
@@ -122,23 +121,22 @@ function addPointToPath($newLatLong, $trip) {
             if($newTripsRoute = fopen($jsonRouteFilePath,"w")){
                 fwrite($newTripsRoute, json_encode($tripPaths));
                 fclose($newTripsRoute);
-                $result = true;
+                $result = TRUE;
             }else{
                 //error using fopen.
                 $error_msg = "Could not open file.";
-                $result = false;
+                $result = FALSE;
             }
         }else{
             //No distance between provided point and last point.  Likely the same point was provided.
             $error_msg = "No distance travelled";
-            $result = false;
+            $result = FALSE;
         }
     }else{
-        $error_msg = "No MQ result given";
+        $error_msg = "No MapQuest result given. Could not add Leg to trip.";
         $result = FALSE;
     }
-    
-    //echo $error_msg;
+    if(!empty($error_msg)){echo $error_msg;}
     return $result;
 }
 
@@ -170,9 +168,6 @@ function generateFullPath() {
                         $mqString = getMQroute($previousLatLong, $currentLatLong);
                         if($mqString){
                             $mqResult = json_decode($mqString);
-                            //$mqResult = json_decode(getMQroute());
-
-                            //
                             if( $row['tripname'] !== $previousTripName){
                                 $newTrip = new Trip();
                                 $newTrip->name = ($row['tripname']);
@@ -198,7 +193,7 @@ function generateFullPath() {
                                 $currentTrip->add_leg($newLeg);
                             }
                         }else{ 
-                            //Map Quest result  not returned
+                            //Map Quest result not returned
                             $error_msg = "Map Quest result not returned";
                             $result = false;
                             
