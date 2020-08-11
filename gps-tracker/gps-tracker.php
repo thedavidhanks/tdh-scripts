@@ -20,6 +20,7 @@
 //CODE 125: Environment variable could not be found.
 
 include('../common/common_functions.php');
+include_once('updatePath.php');
 
 function deg_to_rad($deg){
     return $deg*(pi()/180);
@@ -119,10 +120,12 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                                 include_once('updatePath.php');
                                 if($update_full_path){
                                     generateFullPath();
+                                    //TODO replace with a call to http://tdh-nodescripts.herokuapps.com
                                 }
                                 else{
                                     //add to existing path
                                     addPointToPath([$lat, $long], 'RoadTrip2020');
+                                    //TODO replace with a call to http://tdh-nodescripts.herokuapps.com
                                 }
                             }
                         }else{
@@ -148,10 +151,10 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
             echo "CODE 100: data is missing from post.";
 	}
         
-/*List all the data points in time order*/
+
 }else if(filter_input(INPUT_SERVER, "REQUEST_METHOD") === "GET") {
-    //Collect and filter all the post vars.
     switch (filter_input(INPUT_GET,'request' )){
+        /*List all the data points in time order*/
         case "listall":
             try{
             $db = connect_db($tdh_db);
@@ -171,7 +174,7 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                     }
                     $gps_list_json .= "]}";
                     echo $gps_list_json;
-                }else{echo "CODE 105: No data returned by queuery<br />";}	
+                }else{echo "CODE 105: No data returned by query<br />";}	
             }catch(PDOException $ex) {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
@@ -180,13 +183,11 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
         case "getPathJSON":
             echo file_get_contents("cricketTraveledPath.json");
             break;
-//        case "test":
-//            include_once('updatePath.php');
-//            addPointToPath([31.7922398, -106.2160130], 'RoadTrip2020');
-//            break;
+        //TODO convert to google roads for a full path
+        //https://developers.google.com/maps/documentation/roads/snap
 //        case "updateFullPath":
-//            include_once('updatePath.php');
 //            generateFullPath();
+//            //TODO replace with a call to http://tdh-nodescripts.herokuapps.com
 //            break;
         case "checkDistance":
             $lat1 = filter_input(INPUT_GET,'lat1',FILTER_VALIDATE_FLOAT);
