@@ -76,6 +76,24 @@ function getMQroute($point1, $point2){
     //echo $result;
     return $result;
 }
+
+function getGoogleRoute($point1, $point2){
+    //returns a json from GoogleMaps API given $point1 [ lat, long ] & $point2 [lat, long]
+    //Reference: https://developers.google.com/maps/documentation/roads/snap
+    
+    $apiKey = getenv("GOOGLE_ROADS_API");
+    $pointStr = "{$point1[0]},{$point1[1]}|{$point2[0]},{$point2[1]}";
+    $url = "https://roads.googleapis.com/v1/snapToRoads?path={$pointStr}&interpolate=true&key={$apiKey}";
+   
+    $result = file_get_contents($url);
+    if ($result === FALSE || empty($result)) { 
+        echo "Nothing returned from Google Roads API";
+        $result = FALSE;
+    }
+    //echo $result;
+    return $result;
+}
+
 function addPointToPath($newLatLong, $trip) {
     //Adds on to the existing path with the new coordinate
     $jsonRouteFilePath = "cricketTraveledPath.json";
@@ -141,6 +159,101 @@ function addPointToPath($newLatLong, $trip) {
 }
 
 function generateFullPath() {
+    //Looks at all the coordinates in the database and creates a JSON path file.
+    include_once('../common/common_functions.php');
+    $jsonRouteFilePath = "cricketTraveledPath.json";
+    $error_msg = "";
+    $result = true;
+    $travelObj = new Travel();
+    $tdh_db = "CLEARDB_URL_TDH_SCRIPTS";
+    
+    //Get the points from the database sorted by tripname, then date
+    try{
+        if($db = connect_db($tdh_db)){
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+            
+            $query_sel = $db->query("SELECT * from gps_readings order by `tripname`, `time` ASC");
+            $previousLatLong = [];
+            $previousTripName = "";
+            $tripLeg_id = 0;
+            if($query_sel->rowCount() > 0){
+                foreach ($query_sel as $row){
+                    $currentLatLong = [ $row['lat'], $row['long'] ];
+                    $time = $row['time'];
+                    if(!empty($previousLatLong)){
+                        //get the mapquest info
+//                        echo "getting directions with "
+//                            .implode(",",$currentLatLong)
+//                            ." and "
+//                            .implode(",",$previousLatLong)
+//                            ." <br />";
+                        $mqString = getMQroute($previousLatLong, $currentLatLong);
+                        if($mqString){
+                            //echo "Got mq result <br />";
+                            $mqResult = json_decode($mqString);
+                            if( $row['tripname'] !== $previousTripName){
+                                $newTrip = new Trip();
+                                $newTrip->name = ($row['tripname']);
+                                $travelObj->add_trip($newTrip);
+                                $previousTripName = $row['tripname'];
+                            }
+                            //Get the latest trip object from the travelObj
+                            $currentTrip = end($travelObj->trips);
+
+                            //If the points not the same make a new leg
+                            $distance = $mqResult->{"route"}->{"distance"};
+                            if($distance > 0){
+                                $tripLeg_id += 10;
+                                $newLeg = new TripLeg();
+                                $newLeg->id = $tripLeg_id;
+                                $newLeg->distance = $distance;
+                                $newLeg->startLatLong = $previousLatLong;
+                                $newLeg->endLatLong = $currentLatLong;
+                                $newLeg->startTime = $time;
+                                $newLeg->MQencodedPath = $mqResult->{"route"}->{"shape"}->{"shapePoints"};
+
+                                //add the leg to the current trip
+                                $currentTrip->add_leg($newLeg);
+                            }
+                        }else{ 
+                            //Map Quest result not returned
+                            $error_msg = "Map Quest result not returned";
+                            $result = false;
+                        }
+                    }
+                    $previousLatLong = $currentLatLong;
+                }
+                //If none of the leg creations failed,
+                //Turn the object into a json string and update the file.
+                if($result){
+                    if($newTripsRoute = fopen($jsonRouteFilePath,"w")){
+                        fwrite($newTripsRoute, json_encode($travelObj));
+                        fclose($newTripsRoute);
+                        $result = true;
+                    }else{
+                        //error using fopen.
+                        $error_msg = "Could not open file.";
+                        $result = false;
+                    }
+                }else{
+                    $error_msg.="Failed to create all legs of trip from MQ api. <br />";
+                }
+            }
+        }else{ //handle error
+            $error_msg = "Could not connect to database";
+            $result = false;
+        }
+    }catch(PDOException $ex) {
+        $error_msg = "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
+        $error_msg .= $ex->getMessage();
+        $result = false;        
+    }
+    echo $result ? "Success! New file created." : $error_msg;
+    return $result;
+}
+
+function generateFullPathWithGoogle() {
     //Looks at all the coordinates in the database and creates a JSON path file.
     include_once('../common/common_functions.php');
     $jsonRouteFilePath = "cricketTraveledPath.json";
