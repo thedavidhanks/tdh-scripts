@@ -18,6 +18,7 @@ include 'functions.php';
 $itemNo = (!IsNullOrEmptyString(filter_input(INPUT_GET, "itemNo", FILTER_SANITIZE_STRING))?filter_input(INPUT_GET, "itemNo"):"");
 $option = (!IsNullOrEmptyString(filter_input(INPUT_GET, "option", FILTER_SANITIZE_STRING))?filter_input(INPUT_GET, "option"):"");
 
+//TODO - broken, connects to the wrong db.  Restore server.
 $conn = connect_db();
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

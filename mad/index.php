@@ -1,15 +1,16 @@
 <?php
-//TEST only - headers allow request from any origin.  needs to change to otc-react-app.herokuapp.com or similar.
-header('Access-Control-Allow-Origin: *');
+
+include('../common/header.php');  //TEST only - headers allow request from any origin.  
 header('Access-Control-Allow-Methods: GET, POST');
 header("Access-Control-Allow-Headers: X-Requested-With");
 
-include('../functions.php');
+include('../common/common_functions.php');
+//include('../functions.php');
 //if $_GET[option]=="add" and the user is allowed then
 //  do read all the post variables and add the new project
 //else just show all the projects
 try{
-    $db = connect_db();
+    $db = connect_db("CLEARDB_URL_TDH_SCRIPTS");
     $query = <<<SQL
         SELECT 
             *
