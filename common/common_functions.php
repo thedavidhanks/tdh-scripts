@@ -26,4 +26,7 @@ function test_input($data) {
   return $cleanData;
 }
 
+function IsNullOrEmptyString($question){
+    return (!isset($question) || trim($question)==='');
+}
 ?>

@@ -38,9 +38,8 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
                 echo "CODE 120: Could not connect to mySQL DB<br />"; //user friendly message
                 echo $ex->getMessage();
             }
-	}
-	else{	
-            echo "CODE 100: data is missing from post.";
+	}else{	
+            echo "CODE 100: data is missing from POST.";
 	}
 
 }else if(filter_input(INPUT_SERVER, "REQUEST_METHOD") === "GET") {

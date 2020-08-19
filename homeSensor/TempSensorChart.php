@@ -5,8 +5,10 @@
  * then add them to the Chart.js object as scatter objects.
  */
 
+include('../common/common_functions.php');
+
  try{
- 	$conn_sensordb = connect_db();
+ 	$conn_sensordb = connect_db(); //TODO wrong db. needs argument.
 	$conn_sensordb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 	$stmt=$conn_sensordb->prepare("SELECT reading_id, DATE_FORMAT(reading_time,'%m/%d/%Y %H:%i') as date, tempF, rel_humidity, humidity FROM readings WHERE (reading_loc = 'test' OR sensor_id = 1) ORDER BY reading_time");
 	$stmt->execute();
