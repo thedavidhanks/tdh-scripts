@@ -1,6 +1,7 @@
 {
   "require" : {
-    "google/cloud": "^0.103.0"
+    "google/cloud": "^0.103.0",
+    "aws/aws-sdk-php": "^3.158"
   },
   "require-dev": {
     "heroku/heroku-buildpack-php": "*"
