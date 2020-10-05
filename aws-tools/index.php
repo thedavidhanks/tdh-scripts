@@ -1,7 +1,17 @@
 <?php
 /* Utilizes AWS API to start and stop EC2 instances.
  * 
+ * expects 2 required parameter
+ * 
+ * Parameters:
+ * service is required.
+ * service options are stop|start|status
+ * 
+ * passhash is required for service=stop & service=start
+ * passhash shall be a md5 string of a password
  */
+include('../common/header.php');  //TEST only - headers allow request from any origin.  
+header('Access-Control-Allow-Methods: GET, POST');
 
 require '../vendor/autoload.php';
 
@@ -25,24 +35,39 @@ function checkResult($server_response){
 }
 
 if(filter_input(INPUT_SERVER, "REQUEST_METHOD") === "GET") {
-    
     switch (filter_input(INPUT_GET,'service' )){
+        //start factorio server
         case "start":
-            //start factorio server
-            $result = $ec2Client->startInstances($instance_cfg);
-            if(checkResult($result)){
-                $response = "starting...";
+            if( null !==(filter_input(INPUT_GET,'passhash')) && !empty(filter_input(INPUT_GET,'passhash'))) {
+                if( filter_input(INPUT_GET,'passhash') == md5(getenv('EC2_START_PHRASE'))){
+                    $result = $ec2Client->startInstances($instance_cfg);
+                    if(checkResult($result)){
+                        $response = "starting...";
+                    }else{
+                        $response = "error starting!";
+                    }
+                }else{
+                    $response = "incorrect password.";
+                }
             }else{
-                $response = "error starting!";
+                $response = "no password set.";
             }
             break;
         case "stop":
             //stop factorio server
-            $result = $ec2Client->stopInstances($instance_cfg);
-            if(checkResult($result)){
-                $response = "stopping...";
+            if( null !==(filter_input(INPUT_GET,'passhash')) && !empty(filter_input(INPUT_GET,'passhash'))) {
+                if( filter_input(INPUT_GET,'passhash') == md5(getenv('EC2_START_PHRASE'))){
+                    $result = $ec2Client->stopInstances($instance_cfg);
+                    if(checkResult($result)){
+                        $response = "stopping...";
+                    }else{
+                        $response = "error stopping!";
+                    }
+                }else{
+                    $response = "incorrect password.";
+                }
             }else{
-                $response = "error stopping!";
+                $response = "no password set.";
             }
             break;
         case "status":
@@ -51,18 +76,10 @@ if(filter_input(INPUT_SERVER, "REQUEST_METHOD") === "GET") {
             $result = $ec2Client->describeInstanceStatus(array(
                 'IncludeAllInstances'=> true,
                 'InstanceIds' => $instanceIds));
+            //print("<pre>"+print_r($result)+"</pre>");
             $response = $result["InstanceStatuses"][0]["InstanceState"]["Name"];
             
             break;
     }
 }
-//print("<pre>".print_r($result,true)."</pre>");
-//var_dump($result);
-//var_dump($apple->name);
-//print("<pre>".print_r($result,true)."</pre>");
-//echo "<hr />";
-//print("<pre>".print_r($apple,true)."</pre>");
-//echo $apple->name;
-//echo "<hr />";
-//print("<pre>".print_r($result["InstanceStatuses"][0]["InstanceState"]["Name"],true)."</pre>");
 echo $response;
