@@ -68,6 +68,8 @@ function getMQroute($point1, $point2){
         )
     );
     $context  = stream_context_create($options);
+    //temp time limit
+    set_time_limit(60);
     $result = file_get_contents($url, false, $context);
     if ($result === FALSE || empty($result)) { 
         //echo "Nothing returned from map quest";
