@@ -196,14 +196,14 @@ if (filter_input(INPUT_SERVER, "REQUEST_METHOD") === "POST") {
             $long2 = filter_input(INPUT_GET,'long2',FILTER_VALIDATE_FLOAT );
             echo meters_a_to_b($lat1,$long1, $lat2, $long2);                          
             break;
-        case "totalDistanceTravelled":
+        case "totalDistanceTraveled":
             $data = json_decode(file_get_contents("cricketTraveledPath.json"))->trips[0]->tripLegs;
-            $distanceTravelled = 0;
+            $distanceTraveled = 0;
             foreach($data as $index=>$value){
-              $distanceTravelled += $value->distance;  
+              $distanceTraveled += $value->distance;  
             }
             //echo $data[0]->distance;
-            echo $distanceTravelled;
+            echo $distanceTraveled;
             break;
         case "latest":
         default:
